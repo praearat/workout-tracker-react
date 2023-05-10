@@ -9,7 +9,7 @@ const CreateExercise = () => {
     name: "",
     muscle: "chest",
   });
-  const { name, muscle } = exerciseDetails;
+  const { muscle } = exerciseDetails;
   const navigate = useNavigate();
 
   const onChangeName = (event) => {

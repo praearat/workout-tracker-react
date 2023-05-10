@@ -36,28 +36,28 @@ const Home = () => {
       />
       <form className="max-w-md mx-auto space-y-3" onSubmit={onSignUp}>
         <input
-          className="w-full border rounded px-5 py-3"
+          className="w-full border rounded-md px-5 py-2"
           type="text"
           id="name"
           placeholder="Name"
           onChange={onChangeInput}
         />
         <input
-          className="w-full border rounded px-5 py-3"
+          className="w-full border rounded-md px-5 py-2"
           type="email"
           id="email"
           placeholder="Email"
           onChange={onChangeInput}
         />
         <input
-          className="w-full border rounded px-5 py-3"
+          className="w-full border rounded-md px-5 py-2"
           type="password"
           id="password"
           placeholder="Password"
           onChange={onChangeInput}
         />
         <button
-          className="w-full border rounded px-5 py-3 bg-[#31455e] text-white font-bold hover:bg-[#29384c] focus:bg-[#1f2a39]"
+          className="w-full border rounded-md px-4 py-2 bg-[#31455e] text-white font-semibold hover:bg-[#29384c] focus:bg-[#1f2a39]"
           type="submit"
         >
           SIGN UP

@@ -8,6 +8,8 @@ import ExistingExercise from "./pages/ExistingExercise";
 import Header from "./components/Header";
 import Profile from "./pages/Profile";
 import PlanWorkout from "./pages/PlanWorkout";
+import TrackWorkout from "./pages/TrackWorkout";
+import TrackingList from "./pages/TrackingList";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/create-exercise" element={<CreateExercise />} />
           <Route path="/existing-exercise" element={<ExistingExercise />} />
           <Route path="/plan-workout" element={<PlanWorkout />} />
+          <Route path="/track-workout" element={<TrackWorkout />} />
+          <Route path="/tracking-list/:trackingId" element={<TrackingList />} />
         </Routes>
       </Router>
       <ToastContainer

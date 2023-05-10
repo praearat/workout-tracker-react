@@ -1,17 +1,29 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { AiOutlineDelete } from "react-icons/ai";
+import { IoMdAddCircle } from "react-icons/io";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 const PlanWorkout = () => {
-  const [workoutPlan, setWorkoutPlan] = useState([]);
+  const [plan, setPlan] = useState([]);
   const [exerciseOptions, setExerciseOptions] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState({
     muscle: "chest",
     exercise: "",
+    amountOfSets: "",
   });
-  const { muscle, exercise } = selectedExercise;
+  const { muscle, amountOfSets } = selectedExercise;
   const [loading, setLoading] = useState();
+  const navigate = useNavigate();
 
   ////////// ONCLICK MUSCLE //////////
 
@@ -34,28 +46,90 @@ const PlanWorkout = () => {
 
   //   console.log("selected exercise =", selectedExercise);
 
+  ////////// ONCHANGE AMOUNT OF SETS //////////
+
+  const onChangeSets = (event) => {
+    setSelectedExercise((prev) => {
+      return { ...prev, amountOfSets: event.target.value };
+    });
+  };
+
+  // console.log("selected exercise =", selectedExercise);
+
   ////////// ONCLICK ADD EXERCISE //////////
 
   const onClickAddExercise = (event) => {
     event.preventDefault();
-    setWorkoutPlan((prev) => {
+
+    if (!selectedExercise.exercise) {
+      toast.error("Please select an exercise.");
+      return;
+    }
+
+    setPlan((prev) => {
       return [...prev, selectedExercise];
     });
   };
 
-  console.log("workout plan =", workoutPlan);
+  console.log("plan =", plan);
 
-  ////////// ONCLICK DELETE WORKOUT PLAN //////////
+  ////////// ONCLICK DELETE PLAN //////////
 
-  const onDeleteWorkoutPlan = (targetIndex) => {
-    const updatedWorkoutPlan = workoutPlan.filter((exercise, index) => {
+  const onDeletePlan = (targetIndex) => {
+    const updatedPlan = plan.filter((exercise, index) => {
       if (index !== targetIndex) {
         return exercise;
       }
       return false;
     });
 
-    setWorkoutPlan(updatedWorkoutPlan);
+    setPlan(updatedPlan);
+  };
+
+  ////////// ON START WORKOUT //////////
+
+  const onStartTrackingWorkout = () => {
+    //Prepare variable for collecting tracking id and data
+    const trackingData = {
+      id: null,
+      data: [],
+    };
+    console.log("trackingData.startTime =", trackingData.startTime);
+
+    //Create default tracking data structure from the plan
+    trackingData.data = plan.map((exercise) => {
+      const trackingSets = [];
+      for (let i = 1; i <= exercise.amountOfSets; i++) {
+        trackingSets.push({ weight: null, reps: null, status: false });
+      }
+      return {
+        ...exercise,
+        sets: trackingSets,
+      };
+    });
+
+    //Add tracking doc to database and store its id to be used as a ref in track workout page
+    const addTrackingDoc = async () => {
+      const { id, ...data } = trackingData;
+      console.log("trackingData =", trackingData);
+      console.log("data =", data);
+      try {
+        const docRef = await addDoc(collection(db, "trackings"), {
+          data,
+          startTime: serverTimestamp(),
+          finishTime: null,
+        });
+        trackingData.id = docRef.id;
+        navigate("/track-workout", { state: { trackingData } });
+      } catch (error) {
+        console.log("!!!add tracking doc error =", error);
+        toast.error("Something went wrong");
+      }
+    };
+    addTrackingDoc();
+
+    // console.log("trackingData =", trackingData);
+    // console.log("plan =", plan);
   };
 
   ////////// FETCH EXERCISES ACCORDING TO TARGET MUSCLE //////////
@@ -92,11 +166,11 @@ const PlanWorkout = () => {
 
   return (
     <div className="max-w-xs mx-auto">
-      <p className="text-2xl font-bold text-center mt-6">Track Your Workout</p>
+      <p className="text-2xl font-bold text-center mt-6">Plan Your Workout</p>
       <p className="text-center font-normal">Let's plan your workout!</p>
-      <form className="mt-6">
+      <form className="mt-6" type="submit" onSubmit={onClickAddExercise}>
         {/* TARGET MUSCLE */}
-        <p className="mb-2 font-medium">Target muscle</p>
+        <p className="mb-1 font-medium">1. Target muscle</p>
         <div className="grid grid-cols-3">
           <button
             className={`m-1 text-base text-white font-medium rounded-md  px-3 py-1 hover:bg-[#a0b2c2] ${
@@ -155,8 +229,8 @@ const PlanWorkout = () => {
         </div>
 
         {/* EXERCISE OPTIONS */}
-        <p className="mt-3 mb-2 font-medium">
-          Exercises for <span className="font-bold">{muscle}</span> muscle
+        <p className="mt-4 mb-1 font-medium">
+          2. Exercises for <span className="font-bold">{muscle}</span> muscle
         </p>
         <div className="flex flex-col">
           {exerciseOptions.length === 0 ? (
@@ -192,34 +266,68 @@ const PlanWorkout = () => {
           )}
         </div>
 
+        {/* AMOUNT OF SETS */}
+        <div className="flex items-center">
+          <p className="mt-4 mb-2 font-medium">3. Amount of sets :</p>
+          <input
+            className="ml-2 rounded-md border border-gray-300 w-[70px] px-3 py-1 mt-2"
+            type="number"
+            value={amountOfSets}
+            min={1}
+            required
+            onChange={onChangeSets}
+          />
+        </div>
+
         {/* ADD EXERCISE BUTTON */}
         <button
-          className="w-full mt-3 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
-          onClick={onClickAddExercise}
+          className="flex justify-center items-center w-full mt-3 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
+          type="submit"
         >
           Add Exercise
+          <IoMdAddCircle className="ml-2 text-xl" />
         </button>
-
-        {/* WORKOUT PLAN */}
-        <p className="mt-6 mb-2 text-center font-semibold">Your workout plan</p>
-        {workoutPlan.map((exercise, index) => {
-          return (
-            <div className="flex items-center" key={index}>
-              <p className="capitalize">
-                <span>{index + 1}</span>. {exercise.muscle} :{" "}
-                {exercise.exercise}
-              </p>
-
-              <AiOutlineDelete
-                className="ml-2 cursor-pointer hover:text-red-700"
-                onClick={() => {
-                  onDeleteWorkoutPlan(index);
-                }}
-              />
-            </div>
-          );
-        })}
       </form>
+
+      {/* WORKOUT PLAN */}
+      <div className="mt-6 bg-white rounded-xl px-5 py-4 shadow-md">
+        <p className="mb-3 text-center font-semibold">Your workout plan</p>
+        {plan.length === 0 ? (
+          <p className="text-center text-sm text-gray-500">
+            Add exercise to your workout plan.
+          </p>
+        ) : (
+          plan.map((exercise, index) => {
+            return (
+              <div className="flex justify-between items-start" key={index}>
+                {/* {index > 0 && <hr className="border border-gray-300" />} */}
+                {/* <TbPointFilled className="mr-1 text-sm" /> */}
+                <p className="">
+                  <span className="capitalize font-medium underline">
+                    {exercise.muscle}
+                  </span>
+                  <span className="capitalize"> - {exercise.exercise}</span>
+                </p>
+                <div className="flex flex-wrap items-center ml-2 min-w-[80px]">
+                  <p className="">({exercise.amountOfSets} sets)</p>
+                  <AiOutlineDelete
+                    className="ml-1 cursor-pointer hover:text-red-700"
+                    onClick={() => {
+                      onDeletePlan(index);
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })
+        )}
+        <button
+          className="flex items-center justify-center w-full mt-4 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
+          onClick={onStartTrackingWorkout}
+        >
+          Start Tracking Your Workout!
+        </button>
+      </div>
     </div>
   );
 };
