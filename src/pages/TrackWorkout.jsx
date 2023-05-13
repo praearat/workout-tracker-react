@@ -97,6 +97,7 @@ const TrackWorkout = () => {
     const docRef = doc(db, "trackings", trackingData.id);
     await updateDoc(docRef, {
       finishTime: serverTimestamp(),
+      name: trackingData.name,
     });
   };
 
@@ -121,7 +122,7 @@ const TrackWorkout = () => {
           year: "numeric",
           hour: "numeric",
           minute: "numeric",
-          hour12: true,
+          hour12: false,
         });
         setStartTime(formattedDate);
       } else {
@@ -131,7 +132,7 @@ const TrackWorkout = () => {
     getStartTime();
   }, [trackingData.id]);
 
-  console.log("startTime =", startTime);
+  // console.log("startTime =", startTime);
 
   return (
     <div className="max-w-xs mx-auto">
@@ -177,12 +178,15 @@ const TrackWorkout = () => {
                     onClickDoneSet(event, exerciseIndex, setIndex);
                   }}
                 >
-                  <p className="mt-2 text-lg font-semibold uppercase">
-                    {setIndex + 1}
-                  </p>
+                  <p className="mt-2 text-lg font-semibold">{setIndex + 1}</p>
                   <input
-                    className="mt-1 rounded-md px-3 py-1 w-[70px] border border-gray-300 col-span-2"
+                    className={`mt-1 rounded-md px-3 py-1 w-[70px] border ${
+                      tracking[exerciseIndex].sets[setIndex].status
+                        ? "border-[#f0f0f0]"
+                        : "border-gray-300"
+                    } col-span-2`}
                     type="number"
+                    min={0}
                     id="weight"
                     required
                     disabled={tracking[exerciseIndex].sets[setIndex].status}
@@ -191,8 +195,13 @@ const TrackWorkout = () => {
                     }}
                   />
                   <input
-                    className="mt-1 rounded-md px-3 py-1 w-[70px] border border-gray-300 col-span-2"
+                    className={`mt-1 rounded-md px-3 py-1 w-[70px] border ${
+                      tracking[exerciseIndex].sets[setIndex].status
+                        ? "border-[#f0f0f0]"
+                        : "border-gray-300"
+                    } col-span-2`}
                     type="number"
+                    min={0}
                     id="reps"
                     required
                     disabled={tracking[exerciseIndex].sets[setIndex].status}

@@ -1,27 +1,51 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 const Dashboard = () => {
   const [trackingLists, setTrackingLists] = useState([]);
   const [trackingDateLists, setTrackingDateLists] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const onClickExistingExercise = () => {
     navigate("/existing-exercise");
   };
 
+  ////////// ONCLICK CREATE EXERCISE //////////
+
   const onClickCreateExercise = () => {
     navigate("/create-exercise");
   };
+
+  ////////// ONCLICK TRACK WORKOUT //////////
 
   const onClickTrackWorkout = () => {
     navigate("/plan-workout");
   };
 
-  const onClickTrackingList = (event, trackingList) => {
-    navigate(`/tracking-list/${trackingList.id}`);
-  };
+  ////////// FETCH TRACKING DATA //////////
+
+  useEffect(() => {
+    const fetchTrackingLists = async () => {
+      const q = query(
+        collection(db, "trackings"),
+        where("userRef", "==", auth.currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const getTrackingLists = [];
+      querySnapshot.forEach((doc) => {
+        getTrackingLists.push({ id: doc.id, data: doc.data() });
+      });
+      setTrackingLists(getTrackingLists);
+      formatDate(getTrackingLists);
+      setLoading(false);
+    };
+    fetchTrackingLists();
+  }, []);
+
+  console.log("trackingLists =", trackingLists);
+  // console.log("trackingDateLists =", trackingDateLists);
 
   ////////// FORMAT DATE FUNCTION //////////
 
@@ -35,30 +59,22 @@ const Dashboard = () => {
         year: "numeric",
         hour: "numeric",
         minute: "numeric",
-        hour12: true,
+        hour12: false,
       });
       trackingDateLists.push(formattedDate);
     });
     setTrackingDateLists(trackingDateLists);
   };
 
-  ////////// FETCH TRACKING DATA //////////
+  ////////// ONCLICK TRACKING LIST //////////
 
-  useEffect(() => {
-    const fetchTrackingLists = async () => {
-      const querySnapshot = await getDocs(collection(db, "trackings"));
-      const getTrackingLists = [];
-      querySnapshot.forEach((doc) => {
-        getTrackingLists.push({ id: doc.id, data: doc.data() });
-      });
-      setTrackingLists(getTrackingLists);
-      formatDate(getTrackingLists);
-    };
-    fetchTrackingLists();
-  }, []);
+  const onClickTrackingList = (event, trackingList) => {
+    navigate(`/tracking-list/${trackingList.id}`);
+  };
 
-  console.log("trackingLists =", trackingLists);
-  // console.log("trackingDateLists =", trackingDateLists);
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
   return (
     <div className="max-w-[350px] mx-auto">
@@ -87,29 +103,39 @@ const Dashboard = () => {
       </button>
 
       {/* TRACKING DATA */}
-      <p className="mt-6 text-center font-semibold">
-        Your Workout Tracking Data
-      </p>
-      <ul className="mt-4 space-y-2">
-        {trackingLists.map((trackingList, index) => {
-          return (
-            <li
-              className="h-[50px] px-5 py-3 bg-white rounded-sm cursor-pointer shadow hover:shadow-md transition duration-150"
-              key={trackingList.id}
-              onClick={(event) => {
-                onClickTrackingList(event, trackingList);
-              }}
-            >
-              <div className="flex justify-between">
-                <p>{trackingDateLists[index]}</p>
-                <p className="font-medium">
-                  {trackingList.data.data.length}{" "}
-                  {trackingList.data.data.length > 1 ? "Exercises" : "Exercise"}
-                </p>
-              </div>
-            </li>
-          );
-        })}
+      <p className="mt-6 text-lg text-center font-bold">Your Tracking Data</p>
+      <ul className="mt-3 space-y-2">
+        {trackingLists.length === 0 ? (
+          <p className="text-center text-sm text-gray-500">No tracking data</p>
+        ) : (
+          trackingLists.map((trackingList, index) => {
+            return (
+              <li
+                className="h-[50px] px-5 py-3 bg-white rounded-sm cursor-pointer shadow hover:shadow-md transition duration-150"
+                key={trackingList.id}
+                onClick={(event) => {
+                  onClickTrackingList(event, trackingList);
+                }}
+              >
+                <div className="flex justify-between">
+                  <p>{trackingDateLists[index]}</p>
+                  {trackingList.data.name ? (
+                    <p className="text-[#648498] font-medium capitalize">
+                      {trackingList.data.name}
+                    </p>
+                  ) : (
+                    <p className="text-[#648498] font-medium">
+                      {trackingList.data.data.length}{" "}
+                      {trackingList.data.data.length > 1
+                        ? "Exercises"
+                        : "Exercise"}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })
+        )}
       </ul>
     </div>
   );

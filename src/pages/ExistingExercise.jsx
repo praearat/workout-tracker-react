@@ -7,7 +7,7 @@ import {
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import ExerciseList from "../components/ExerciseList";
 import { useNavigate } from "react-router";
 
@@ -31,7 +31,7 @@ const ExistingExercise = () => {
 
   ////////// ONCLICK DELETE EXERCISE //////////
   const onDelete = async (id, data) => {
-    await deleteDoc(doc(db, "exercise", id));
+    await deleteDoc(doc(db, "exercises", id));
     fetchExercises(data.muscle);
   };
 
@@ -40,7 +40,8 @@ const ExistingExercise = () => {
     setLoading(true);
     try {
       const q = query(
-        collection(db, "exercise"),
+        collection(db, "exercises"),
+        where("userRef", "==", auth.currentUser.uid),
         where("muscle", "==", muscle)
       );
       const querySnapshot = await getDocs(q);
@@ -70,23 +71,23 @@ const ExistingExercise = () => {
   console.log("all existing exercises =", existingExercises);
 
   if (loading) {
-    return <p>Loading</p>;
+    return <p>Loading...</p>;
   }
 
   return (
     <div className="max-w-xs mx-auto">
       <p className="mt-6 text-center text-2xl font-bold">Existing Exercise</p>
-      <p className="mt-6 font-semibold">Chest</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Chest</p>
       <ExerciseList muscle={chest} onDelete={onDelete} />
-      <p className="mt-6 font-semibold">Back</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Back</p>
       <ExerciseList muscle={back} onDelete={onDelete} />
-      <p className="mt-6 font-semibold">Arms</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Arms</p>
       <ExerciseList muscle={arms} onDelete={onDelete} />
-      <p className="mt-6 font-semibold">Abs</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Abs</p>
       <ExerciseList muscle={abs} onDelete={onDelete} />
-      <p className="mt-6 font-semibold">Legs</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Legs</p>
       <ExerciseList muscle={legs} onDelete={onDelete} />
-      <p className="mt-6 font-semibold">Shoulders</p>
+      <p className="mt-6 font-bold text-[#648498] uppercase">Shoulders</p>
       <ExerciseList muscle={shoulders} onDelete={onDelete} />
       <button
         className="mt-6 w-full text-sm text-white font-semibold rounded-md bg-[#31455e] px-4 py-2 shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"

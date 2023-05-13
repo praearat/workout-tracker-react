@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
@@ -12,11 +12,15 @@ const CreateExercise = () => {
   const { muscle } = exerciseDetails;
   const navigate = useNavigate();
 
+  ////////// ONCHANGE EXERCISE NAME ///////////
+
   const onChangeName = (event) => {
     setExerciseDetails((prev) => {
-      return { ...prev, name: event.target.value };
+      return { ...prev, name: event.target.value.toLowerCase() };
     });
   };
+
+  ////////// ONSELECT MUSCLE //////////
 
   const onClickMuscle = (event) => {
     event.preventDefault();
@@ -26,10 +30,15 @@ const CreateExercise = () => {
   };
   console.log("workout details =", exerciseDetails);
 
+  ////////// ONSUBMIT EXERCISE //////////
+
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      const docRef = await addDoc(collection(db, "exercise"), exerciseDetails);
+      const docRef = await addDoc(collection(db, "exercises"), {
+        ...exerciseDetails,
+        userRef: auth.currentUser.uid,
+      });
       console.log("docRef.id =", docRef.id);
       navigate("/dashboard");
       toast.success("Your exercise was created!");
@@ -37,6 +46,10 @@ const CreateExercise = () => {
       console.log("submit error =", error);
     }
   };
+
+  console.log("auth.currentUser =", auth.currentUser);
+
+  //////////
 
   return (
     <div className="max-w-xs mx-auto">
@@ -46,7 +59,7 @@ const CreateExercise = () => {
         <input
           className="mt-2 rounded-md border px-4 py-2"
           type="text"
-          placeholder="Ex. Bench press"
+          placeholder="Ex. Bench Press"
           required
           onChange={onChangeName}
         />

@@ -12,9 +12,9 @@ const ExerciseList = (props) => {
         muscle.map((exercise) => {
           return (
             <div key={exercise.id} className="flex items-center">
-              <li>{exercise.data.name}</li>
+              <li className="capitalize">{exercise.data.name}</li>
               <AiOutlineDelete
-                className="ml-2 cursor-pointer hover:text-red-700"
+                className="ml-2 cursor-pointer text-gray-400 hover:text-red-700"
                 onClick={() => {
                   onDelete(exercise.id, exercise.data);
                 }}
