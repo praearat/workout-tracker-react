@@ -1,9 +1,9 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { toast } from "react-toastify";
+import OAuth from "../components/OAuth";
 
 const SignIn = () => {
   const [input, setInput] = useState({ email: "", password: "" });
@@ -83,10 +83,7 @@ const SignIn = () => {
         <p className="mx-2 text-sm font-medium">OR</p>
         <hr className="w-[50%] border-gray-300" />
       </div>
-      <button className="flex justify-center w-full border rounded-md px-4 py-2 bg-red-700 hover:bg-red-800 focus:bg-red-900">
-        <FcGoogle className="bg-white rounded-full text-lg mr-2" />
-        <p className="text-white text-sm font-bold">CONTINUE WITH GOOGLE</p>
-      </button>
+      <OAuth />
     </div>
   );
 };
