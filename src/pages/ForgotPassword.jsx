@@ -31,7 +31,7 @@ const ForgotPassword = () => {
     <div className="flex flex-col justify-center mt-6 max-w-xs mx-auto space-y-3">
       <img
         className="w-[80%] mx-auto"
-        src={process.env.PUBLIC_URL + "../barbell-01.png"}
+        src={process.env.PUBLIC_URL + "../logo.png"}
         alt=""
       />
       <form className="w-full mx-auto space-y-3" onSubmit={onClickSendEmail}>

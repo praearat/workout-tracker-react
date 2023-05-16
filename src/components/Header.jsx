@@ -32,19 +32,27 @@ const Header = () => {
           <img
             src={process.env.PUBLIC_URL + "../logo.png"}
             alt="workout-tracker-logo"
+            onClick={() => {
+              navigate("/");
+            }}
           />
         </div>
         <div className="flex space-x-6 font-semibold">
-          <p
-            className={`${
-              location.pathname === "/dashboard"
-                ? "text-black border-b-4 border-[#a0b2c2]"
-                : "text-gray-400"
-            } cursor-pointer py-[15px]`}
-            onClick={onClickDashboard}
-          >
-            Dashboard
-          </p>
+          {loggedIn ? (
+            <p
+              className={`${
+                location.pathname === "/dashboard"
+                  ? "text-black border-b-4 border-[#a0b2c2]"
+                  : "text-gray-400"
+              } cursor-pointer py-[15px]`}
+              onClick={onClickDashboard}
+            >
+              Dashboard
+            </p>
+          ) : (
+            <></>
+          )}
+
           {loggedIn ? (
             <p
               className={`${

@@ -13,6 +13,7 @@ const useAuthStatus = () => {
         console.log("user =", user);
       } else {
         console.log("User is signed out");
+        setLoggedIn(false);
       }
       setLoading(false);
     });

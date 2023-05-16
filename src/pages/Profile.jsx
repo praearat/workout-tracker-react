@@ -6,32 +6,58 @@ import {
   doc,
   getDocs,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { AiOutlineDelete } from "react-icons/ai";
 import { useNavigate } from "react-router";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { signOut, updateProfile } from "firebase/auth";
+import { useAuthStatus } from "../hooks/useAuthStatus";
+import { toast } from "react-toastify";
 
 const Profile = () => {
-  const [userProfile, setUserProfile] = useState({ name: "", email: "" });
+  const [userProfile, setUserProfile] = useState({
+    name: auth.currentUser.displayName,
+    email: auth.currentUser.email,
+  });
   const [savedPlans, setSavedPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [enableEdit, setEnableEdit] = useState(false);
   const navigate = useNavigate();
 
-  ////////// GET USER PROFILE //////////
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("user =", user);
-        const getUserProfile = { name: user.displayName, email: user.email };
-        setUserProfile(getUserProfile);
-      } else {
-        console.log("User is signed out");
-      }
-    });
+  useAuthStatus();
 
-    setLoading(false);
-  }, []);
+  ////////// ONCLICK EDIT/APPLY NAME //////////
+
+  const onClickEditName = async () => {
+    if (userProfile.name === auth.currentUser.displayName) {
+      setEnableEdit((prev) => {
+        return !prev;
+      });
+    } else {
+      try {
+        await updateProfile(auth.currentUser, {
+          displayName: userProfile.name,
+        });
+        const docRef = doc(db, "users", auth.currentUser.uid);
+        await updateDoc(docRef, { name: userProfile.name });
+        toast.success("Your profile was edited");
+      } catch (error) {
+        console.log("!!!update profile error =", error);
+        toast.error("Could not update profile");
+      }
+      setEnableEdit((prev) => {
+        return !prev;
+      });
+    }
+  };
+
+  ////////// ONCHANGE NAME //////////
+
+  const onChangeName = (event) => {
+    setUserProfile((prev) => {
+      return { ...prev, [event.target.id]: event.target.value };
+    });
+  };
 
   ////////// ONCLICK SIGN OUT //////////
 
@@ -83,42 +109,46 @@ const Profile = () => {
     setSavedPlans(updatedSavedPlans);
   };
 
-  ////////// LOADING //////////
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <div className="max-w-[350px] mx-auto">
       <p className="text-center mt-6 text-2xl font-bold">Profile</p>
-      <div className="mt-6 max-w-xs mx-auto space-y-1">
-        <div className="grid grid-cols-4 items-center">
-          <p className="font-medium">Name</p>
-          <input
-            className="px-3 py-1 rounded-md col-span-3"
-            value={userProfile.name}
-            disabled
-          />
+      <div className="mt-6 max-w-xs mx-auto space-y-3">
+        <div className="space-y-1">
+          <div className="grid grid-cols-4 items-center">
+            <p className="font-medium">Name</p>
+            <input
+              className="px-3 py-1 rounded-md col-span-3"
+              id="name"
+              value={userProfile.name}
+              disabled={!enableEdit}
+              onChange={onChangeName}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center">
+            <p className="font-medium">Email</p>
+            <input
+              className="px-3 py-1 rounded-md col-span-3"
+              value={userProfile.email}
+              disabled
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-4 items-center">
-          <p className="font-medium">Email</p>
-          <input
-            className="px-3 py-1 rounded-md col-span-3"
-            value={userProfile.email}
-            disabled
-          />
-        </div>
-        <div className="flex justify-between">
-          <p className="text-blue-500 hover:text-blue-600 cursor-pointer">
-            Edit name
-          </p>
-          <p
-            className="text-red-500 hover:text-red-600 cursor-pointer"
-            onClick={onClickSignOut}
-          >
-            Sign out
-          </p>
+
+        <div className="">
+          <div className="flex justify-between">
+            <p
+              className="text-blue-500 hover:text-blue-600 cursor-pointer"
+              onClick={onClickEditName}
+            >
+              {enableEdit ? "Apply Change" : "Edit name"}
+            </p>
+            <p
+              className="text-red-500 hover:text-red-600 cursor-pointer"
+              onClick={onClickSignOut}
+            >
+              Sign out
+            </p>
+          </div>
         </div>
       </div>
       <p className="mt-6 text-lg text-center font-bold">
