@@ -73,21 +73,23 @@ const Profile = () => {
   ////////// FETCH SAVED PLANS //////////
 
   useEffect(() => {
-    const fetchSavedPlan = async () => {
-      const q = query(
-        collection(db, "plans"),
-        where("userRef", "==", auth.currentUser.uid)
-      );
-      const querySnapshot = await getDocs(q);
-      const getSavedPlans = [];
-      querySnapshot.forEach((doc) => {
-        getSavedPlans.push({ id: doc.id, data: doc.data() });
-      });
-      setSavedPlans(getSavedPlans);
-      console.log("getSavedPlans =", getSavedPlans);
-    };
-    fetchSavedPlan();
-  }, []);
+    if (auth.currentUser.uid) {
+      const fetchSavedPlan = async () => {
+        const q = query(
+          collection(db, "plans"),
+          where("userRef", "==", auth.currentUser.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        const getSavedPlans = [];
+        querySnapshot.forEach((doc) => {
+          getSavedPlans.push({ id: doc.id, data: doc.data() });
+        });
+        setSavedPlans(getSavedPlans);
+        console.log("getSavedPlans =", getSavedPlans);
+      };
+      fetchSavedPlan();
+    }
+  }, [auth.currentUser.uid]);
 
   ////////// ONCLICK SAVED PLAN //////////
 

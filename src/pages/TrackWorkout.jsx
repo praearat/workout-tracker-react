@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BsCheckCircle } from "react-icons/bs";
+import { FiEdit } from "react-icons/fi";
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
@@ -14,8 +15,32 @@ const TrackWorkout = () => {
   const [tracking, setTracking] = useState(trackingData.data);
   const navigate = useNavigate();
 
-  //   console.log("trackingData =", trackingData);
+  console.log("trackingData =", trackingData);
   console.log("tracking =", tracking);
+
+  ////////// GET START TIME //////////
+
+  useEffect(() => {
+    const getStartTime = async () => {
+      const docRef = doc(db, "trackings", trackingData.id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const date = new Date(docSnap.data().startTime.toDate().toString());
+        const formattedDate = date.toLocaleString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: false,
+        });
+        setStartTime(formattedDate);
+      } else {
+        console.log("!!!get startTime error");
+      }
+    };
+    getStartTime();
+  }, [trackingData.id, trackingData.startTime]);
 
   ////////// ONCHANGE TRACKING //////////
 
@@ -74,6 +99,29 @@ const TrackWorkout = () => {
     }
   };
 
+  ////////// ONCLICK EDIT SET //////////
+
+  const onClickEditSet = (exerciseIndex, setIndex) => {
+    const updateStatus = tracking.map((exercise, i) => {
+      if (i === exerciseIndex) {
+        return {
+          ...exercise,
+          sets: exercise.sets.map((set, j) => {
+            if (j === setIndex) {
+              return { ...set, status: false };
+            } else {
+              return set;
+            }
+          }),
+        };
+      } else {
+        return exercise;
+      }
+    });
+    setTracking(updateStatus);
+    // console.log("updateStatus =", updateStatus);
+  };
+
   ////////// ONFINISH WORKOUT //////////
 
   const onFinishWorkout = async (event) => {
@@ -104,33 +152,10 @@ const TrackWorkout = () => {
   ////////// CONFIRM RELOAD PAGE //////////
 
   useEffect(() => {
-    // Confirm Reload Page
     window.onbeforeunload = function () {
       return "";
     };
-
-    // Get startTime
-    const getStartTime = async () => {
-      const docRef = doc(db, "trackings", trackingData.id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const date = new Date(docSnap.data().startTime.toDate().toString());
-        const formattedDate = date.toLocaleString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: false,
-        });
-        setStartTime(formattedDate);
-      } else {
-        console.log("!!!get startTime error");
-      }
-    };
-    getStartTime();
-  }, [trackingData.id]);
+  }, []);
 
   // console.log("startTime =", startTime);
 
@@ -156,11 +181,11 @@ const TrackWorkout = () => {
             </div>
 
             {/* COL HEADER */}
-            <div className="mt-2 grid grid-cols-7">
+            <div className="mt-2 grid grid-cols-8">
               <p className="text-xs font-semibold uppercase">Set</p>
               <p className="text-xs font-semibold uppercase col-span-2">
                 Weight
-                <span className="ml-1 font-normal">(kg)</span>
+                <span className="font-normal lowercase">(kg)</span>
               </p>
               <p className="text-xs font-semibold uppercase col-span-2">Reps</p>
               <p className="text-xs font-semibold uppercase col-span-2">
@@ -172,7 +197,7 @@ const TrackWorkout = () => {
             {tracking[exerciseIndex].sets.map((set, setIndex) => {
               return (
                 <form
-                  className="grid grid-cols-7"
+                  className="grid grid-cols-8 items-center"
                   key={setIndex}
                   onSubmit={(event) => {
                     onClickDoneSet(event, exerciseIndex, setIndex);
@@ -188,6 +213,7 @@ const TrackWorkout = () => {
                     type="number"
                     min={0}
                     id="weight"
+                    value={set.weight}
                     required
                     disabled={tracking[exerciseIndex].sets[setIndex].status}
                     onChange={(event) => {
@@ -203,6 +229,7 @@ const TrackWorkout = () => {
                     type="number"
                     min={0}
                     id="reps"
+                    value={set.reps}
                     required
                     disabled={tracking[exerciseIndex].sets[setIndex].status}
                     onChange={(event) => {
@@ -220,18 +247,28 @@ const TrackWorkout = () => {
                   >
                     Done
                   </button>
+                  <FiEdit
+                    className="mt-1 hover:text-red-600 cursor-pointer"
+                    onClick={() => {
+                      onClickEditSet(exerciseIndex, setIndex);
+                    }}
+                  />
                 </form>
               );
             })}
           </div>
         );
       })}
-      <button
-        className="flex items-center justify-center w-full mt-4 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
-        onClick={onFinishWorkout}
-      >
-        Finish Workout
-      </button>
+      {trackingData.finishTime ? (
+        <></>
+      ) : (
+        <button
+          className="flex items-center justify-center w-full mt-4 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
+          onClick={onFinishWorkout}
+        >
+          Finish Workout
+        </button>
+      )}
     </div>
   );
 };

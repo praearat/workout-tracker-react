@@ -10,6 +10,8 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import ExerciseList from "../components/ExerciseList";
 import { useNavigate } from "react-router";
+import Spinner from "../components/Spinner";
+import { useAuthStatus } from "../hooks/useAuthStatus";
 
 const ExistingExercise = () => {
   const [existingExercises, setExistingExercises] = useState({
@@ -23,6 +25,9 @@ const ExistingExercise = () => {
   const { chest, back, arms, abs, legs, shoulders } = existingExercises;
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { userUid } = useAuthStatus();
+
+  console.log("userUid =", userUid);
 
   ////////// ONCLICK CREATE NEW EXERCISE //////////
   const onClickCreateExercise = () => {
@@ -41,7 +46,7 @@ const ExistingExercise = () => {
     try {
       const q = query(
         collection(db, "exercises"),
-        where("userRef", "==", auth.currentUser.uid),
+        where("userRef", "==", userUid),
         where("muscle", "==", muscle)
       );
       const querySnapshot = await getDocs(q);
@@ -60,18 +65,20 @@ const ExistingExercise = () => {
   };
 
   useEffect(() => {
-    fetchExercises("chest");
-    fetchExercises("back");
-    fetchExercises("arms");
-    fetchExercises("abs");
-    fetchExercises("legs");
-    fetchExercises("shoulders");
-  }, []);
+    if (userUid) {
+      fetchExercises("chest");
+      fetchExercises("back");
+      fetchExercises("arms");
+      fetchExercises("abs");
+      fetchExercises("legs");
+      fetchExercises("shoulders");
+    }
+  }, [userUid]);
 
   console.log("all existing exercises =", existingExercises);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <Spinner />;
   }
 
   return (

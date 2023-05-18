@@ -5,11 +5,13 @@ import { auth } from "../firebase";
 const useAuthStatus = () => {
   const [loading, setLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [userUid, setUserUid] = useState(null);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setLoggedIn(true);
+        setUserUid(user.uid);
         console.log("user =", user);
       } else {
         console.log("User is signed out");
@@ -18,7 +20,7 @@ const useAuthStatus = () => {
       setLoading(false);
     });
   }, []);
-  return { loading, loggedIn };
+  return { loading, loggedIn, userUid };
 };
 
 export { useAuthStatus };

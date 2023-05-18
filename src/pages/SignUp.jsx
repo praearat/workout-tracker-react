@@ -2,7 +2,6 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router";
-import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { toast } from "react-toastify";

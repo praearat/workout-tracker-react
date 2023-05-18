@@ -12,6 +12,8 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { IoMdAddCircle } from "react-icons/io";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { useAuthStatus } from "../hooks/useAuthStatus";
+import Spinner from "../components/Spinner";
 
 const PlanWorkout = () => {
   const [plan, setPlan] = useState([]);
@@ -22,8 +24,8 @@ const PlanWorkout = () => {
     amountOfSets: "",
   });
   const { muscle, amountOfSets } = selectedExercise;
-  const [loading, setLoading] = useState();
   const navigate = useNavigate();
+  const { loading, userUid } = useAuthStatus();
 
   ////////// ONCLICK MUSCLE //////////
 
@@ -37,11 +39,10 @@ const PlanWorkout = () => {
   ////////// FETCH EXERCISES ACCORDING TO TARGET MUSCLE //////////
 
   const fetchExercises = async (muscle) => {
-    setLoading(true);
     try {
       const q = query(
         collection(db, "exercises"),
-        where("userRef", "==", auth.currentUser.uid),
+        where("userRef", "==", userUid),
         where("muscle", "==", muscle)
       );
       const querySnapshot = await getDocs(q);
@@ -50,7 +51,7 @@ const PlanWorkout = () => {
         exercises.push({ id: doc.id, data: doc.data() });
       });
       setExerciseOptions(exercises);
-      setLoading(false);
+
       //   console.log("exercises options=", exercises);
     } catch (error) {
       //   console.log(`!!! fetching ${muscle} error =`, error);
@@ -58,8 +59,10 @@ const PlanWorkout = () => {
   };
 
   useEffect(() => {
-    fetchExercises(selectedExercise.muscle);
-  }, [selectedExercise.muscle]);
+    if (userUid) {
+      fetchExercises(selectedExercise.muscle);
+    }
+  }, [selectedExercise.muscle, userUid]);
 
   ////////// ONCLICK EXERCISE //////////
 
@@ -168,7 +171,7 @@ const PlanWorkout = () => {
   //////////
 
   if (loading) {
-    return <p>Loading</p>;
+    return <Spinner />;
   }
 
   return (

@@ -5,6 +5,8 @@ import { IoMdAddCircle } from "react-icons/io";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
 import { useLocation, useNavigate } from "react-router";
+import { useAuthStatus } from "../hooks/useAuthStatus";
+import Spinner from "../components/Spinner";
 
 const CreatePlan = () => {
   const location = useLocation();
@@ -19,8 +21,8 @@ const CreatePlan = () => {
     amountOfSets: "",
   });
   const { muscle, amountOfSets } = selectedExercise;
-  const [loading, setLoading] = useState();
   const navigate = useNavigate();
+  const { loading, userUid } = useAuthStatus();
 
   console.log("trackingData =", trackingData);
   console.log("plan =", plan);
@@ -31,12 +33,14 @@ const CreatePlan = () => {
     trackingData.data.forEach((exercise) => {
       delete exercise.sets;
     });
-    setPlan({ name: "", data: trackingData.data });
+    setPlan({ name: "", data: trackingData.data, userRef: userUid });
   };
 
   useEffect(() => {
-    getDefaultPlan();
-  }, []);
+    if (userUid) {
+      getDefaultPlan();
+    }
+  }, [userUid]);
 
   ////////// ONCLICK MUSCLE //////////
 
@@ -112,10 +116,10 @@ const CreatePlan = () => {
   ////////// FETCH EXERCISES ACCORDING TO TARGET MUSCLE //////////
 
   const fetchExercises = async (muscle) => {
-    setLoading(true);
     try {
       const q = query(
         collection(db, "exercises"),
+        where("userRef", "==", userUid),
         where("muscle", "==", muscle)
       );
       const querySnapshot = await getDocs(q);
@@ -124,7 +128,7 @@ const CreatePlan = () => {
         exercises.push({ id: doc.id, data: doc.data() });
       });
       setExerciseOptions(exercises);
-      setLoading(false);
+
       //   console.log("exercises options=", exercises);
     } catch (error) {
       //   console.log(`!!! fetching ${muscle} error =`, error);
@@ -157,7 +161,7 @@ const CreatePlan = () => {
   //////////
 
   if (loading) {
-    return <p>Loading</p>;
+    return <Spinner />;
   }
 
   return (

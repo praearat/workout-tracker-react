@@ -35,9 +35,14 @@ const CreateExercise = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("User is not authenticated");
+      }
+
       const docRef = await addDoc(collection(db, "exercises"), {
         ...exerciseDetails,
-        userRef: auth.currentUser.uid,
+        userRef: currentUser.uid,
       });
       console.log("docRef.id =", docRef.id);
       navigate("/dashboard");

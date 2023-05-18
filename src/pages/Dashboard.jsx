@@ -27,22 +27,24 @@ const Dashboard = () => {
   ////////// FETCH TRACKING DATA //////////
 
   useEffect(() => {
-    const fetchTrackingLists = async () => {
-      const q = query(
-        collection(db, "trackings"),
-        where("userRef", "==", auth.currentUser.uid)
-      );
-      const querySnapshot = await getDocs(q);
-      const getTrackingLists = [];
-      querySnapshot.forEach((doc) => {
-        getTrackingLists.push({ id: doc.id, data: doc.data() });
-      });
-      setTrackingLists(getTrackingLists);
-      formatDate(getTrackingLists);
-      setLoading(false);
-    };
-    fetchTrackingLists();
-  }, []);
+    if (auth.currentUser.uid) {
+      const fetchTrackingLists = async () => {
+        const q = query(
+          collection(db, "trackings"),
+          where("userRef", "==", auth.currentUser.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        const getTrackingLists = [];
+        querySnapshot.forEach((doc) => {
+          getTrackingLists.push({ id: doc.id, data: doc.data() });
+        });
+        setTrackingLists(getTrackingLists);
+        formatDate(getTrackingLists);
+        setLoading(false);
+      };
+      fetchTrackingLists();
+    }
+  }, [auth.currentUser.uid]);
 
   console.log("trackingLists =", trackingLists);
   // console.log("trackingDateLists =", trackingDateLists);

@@ -17,25 +17,34 @@ const TrackingList = () => {
   ////////// FORMAT TIME //////////
 
   const formatTime = () => {
-    const startTime = new Date(trackingData.startTime.toDate().toString());
-    const formattedStartTime = startTime.toLocaleString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: false,
-    });
+    let startTime = null;
+    let formattedStartTime = null;
+    let finishTime = null;
+    let formattedFinishTime = null;
 
-    const finishTime = new Date(trackingData.finishTime.toDate().toString());
-    const formattedFinishTime = finishTime.toLocaleString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: false,
-    });
+    if (trackingData.startTime) {
+      startTime = new Date(trackingData.startTime.toDate().toString());
+      formattedStartTime = startTime.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      });
+    }
+
+    if (trackingData.finishTime) {
+      finishTime = new Date(trackingData.finishTime.toDate().toString());
+      formattedFinishTime = finishTime.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      });
+    }
 
     const duration = finishTime - startTime;
 
@@ -44,6 +53,13 @@ const TrackingList = () => {
       finishTime: formattedFinishTime,
       duration,
     };
+  };
+
+  ////////// ON EDIT TRACKING //////////
+
+  const onEditTracking = () => {
+    trackingData.id = params.trackingId;
+    navigate("/track-workout", { state: { trackingData } });
   };
 
   ////////// ON SAVE WORKOUT PLAN //////////
@@ -80,18 +96,33 @@ const TrackingList = () => {
         <p className="text-sm font-medium uppercase">Start Time</p>
         <p className="ml-3 col-span-3">: {formatTime().startTime}</p>
         <p className="text-sm font-medium uppercase">Finish Time</p>
-        <p className="ml-3 col-span-3">: {formatTime().finishTime}</p>
+        {formatTime().finishTime ? (
+          <p className="ml-3 col-span-3">: {formatTime().finishTime}</p>
+        ) : (
+          <p className="ml-3 col-span-3">: No data</p>
+        )}
+        {/* <p className="ml-3 col-span-3">: {formatTime().finishTime}</p> */}
         <p className="text-sm font-medium uppercase">Duration</p>
-        <p className="ml-3 col-span-3">
-          : {(formatTime().duration / 1000 / 60).toFixed(2)} minutes
-        </p>
+        {formatTime().finishTime ? (
+          <p className="ml-3 col-span-3">
+            : {(formatTime().duration / 1000 / 60).toFixed(2)} minutes
+          </p>
+        ) : (
+          <p className="ml-3 col-span-3">: No data</p>
+        )}
       </div>
 
       <button
-        className="w-full mt-6 text-sm text-[#87a0b2] font-semibold rounded-md bg-[#f0f0f0] border border-[#87a0b2] px-4 py-2 shadow-sm hover:text-[#648498] hover:border-[#648498] hover:shadow-md focus:bg-[#d1d9df] focus:shadow-lg"
+        className="mt-3 w-full text-sm text-white font-semibold rounded-md bg-[#31455e] px-4 py-2 shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
+        onClick={onEditTracking}
+      >
+        Edit tracking
+      </button>
+      <button
+        className="w-full mt-3 text-sm text-[#87a0b2] font-semibold rounded-md bg-[#f0f0f0] border border-[#87a0b2] px-4 py-2 shadow-sm hover:text-[#648498] hover:border-[#648498] hover:shadow-md focus:bg-[#d1d9df] focus:shadow-lg"
         onClick={onSavePlan}
       >
-        Save This Workout Plan
+        Save this workout plan
       </button>
 
       {trackingData.data.map((exercise, exerciseIndex) => {
