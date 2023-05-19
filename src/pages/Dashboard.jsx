@@ -113,7 +113,7 @@ const Dashboard = () => {
           trackingLists.map((trackingList, index) => {
             return (
               <li
-                className="h-[50px] px-5 py-3 bg-white rounded-sm cursor-pointer shadow hover:shadow-md transition duration-150"
+                className="h-[50px] px-5 py-3 bg-white rounded-md cursor-pointer shadow hover:shadow-md transition duration-150"
                 key={trackingList.id}
                 onClick={(event) => {
                   onClickTrackingList(event, trackingList);
