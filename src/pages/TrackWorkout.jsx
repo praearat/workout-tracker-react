@@ -263,7 +263,7 @@ const TrackWorkout = () => {
         <></>
       ) : (
         <button
-          className="flex items-center justify-center w-full mt-4 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
+          className="flex items-center justify-center w-full mt-4 mb-6 text-white font-semibold bg-[#31455e] px-4 py-2 rounded-md shadow-sm hover:bg-[#29384c] hover:shadow-md focus:bg-[#1f2a39] focus:shadow-lg"
           onClick={onFinishWorkout}
         >
           Finish Workout

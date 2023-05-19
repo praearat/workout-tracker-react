@@ -300,7 +300,7 @@ const PlanWorkout = () => {
       </form>
 
       {/* WORKOUT PLAN */}
-      <div className="mt-6 bg-white rounded-xl px-5 py-4 shadow-md">
+      <div className="mt-6 mb-6 bg-white rounded-xl px-5 py-4 shadow-md">
         <p className="mb-3 text-center font-semibold">Your workout plan</p>
         {plan.length === 0 ? (
           <p className="text-center text-sm text-gray-500">

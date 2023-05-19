@@ -106,7 +106,7 @@ const Dashboard = () => {
 
       {/* TRACKING DATA */}
       <p className="mt-6 text-lg text-center font-bold">Your Tracking Data</p>
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-3 mb-6 space-y-2">
         {trackingLists.length === 0 ? (
           <p className="text-center text-sm text-gray-500">No tracking data</p>
         ) : (
