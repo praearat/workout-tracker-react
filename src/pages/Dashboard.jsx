@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { auth, db } from "../firebase";
@@ -31,7 +31,8 @@ const Dashboard = () => {
       const fetchTrackingLists = async () => {
         const q = query(
           collection(db, "trackings"),
-          where("userRef", "==", auth.currentUser.uid)
+          where("userRef", "==", auth.currentUser.uid),
+          orderBy("startTime", "desc")
         );
         const querySnapshot = await getDocs(q);
         const getTrackingLists = [];

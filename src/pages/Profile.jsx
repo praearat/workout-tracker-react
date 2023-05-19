@@ -5,6 +5,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  orderBy,
   query,
   updateDoc,
   where,
@@ -77,7 +78,8 @@ const Profile = () => {
       const fetchSavedPlan = async () => {
         const q = query(
           collection(db, "plans"),
-          where("userRef", "==", auth.currentUser.uid)
+          where("userRef", "==", auth.currentUser.uid),
+          orderBy("name")
         );
         const querySnapshot = await getDocs(q);
         const getSavedPlans = [];
